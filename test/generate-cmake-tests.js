@@ -1,37 +1,26 @@
-var chalk = require('chalk');
-var fs = require('fs');
+const chalk = require('chalk');
+const fs = require('fs');
 
-fs.readFile('./test-data.json', 'utf8', function (err, data) {
-    if (err) {
-        console.error(chalk.red(`Failed: ${err.message}`));
-        throw err;
-    }
-    test_data = JSON.parse(data);
+function valueOrNull(value) {
+  return (value === null) ? 'null' : `"${value}"`;
+}
 
-    for (key in test_data) {
-        test_case = test_data[key];
-        if (test_case['pre-release'] === null) {
-          var pre_release_str = null;
-        } else {
-          var pre_release_str = `"${test_case['pre-release']}"`;
-        }
+fs.readFile('./test-data.json', 'utf8', (err, data) => {
+  if (err) {
+    console.error(chalk.red(`Failed: ${err.message}`));
+    throw err;
+  }
+  const testData = JSON.parse(data);
 
-        if (test_case.build === null) {
-          var build_str = null;
-        } else {
-          var build_str = `"${test_case.build}"`;
-        }
-
-        // console.log(chalk.blue(
-        //     `semver_parse_verify("${key}"`
-        //     + ` ${test_case['is-valid']}`
-        //     + ` ${test_case.major} ${test_case.minor} ${test_case.patch}`
-        //     + ` "${test_case['pre-release']}" "${test_case.build}")`));
-
-        console.log(chalk.blue(
-            `semver_parse_verify("${key}"`
-            + ` ${test_case['is-valid']}`
-            + ` ${test_case.major} ${test_case.minor} ${test_case.patch}`
-            + ` ${pre_release_str} ${build_str})`));
-    }
+  Object.entries(testData).forEach(([key, value]) => {
+    console.log(chalk.blue(
+      `semver_parse_verify("${key}"`
+      + ` ${value['is-valid']}`
+      + ` ${valueOrNull(value.major)} `
+      + ` ${valueOrNull(value.minor)}`
+      + ` ${valueOrNull(value.patch)}`
+      + ` ${valueOrNull(value['pre-release'])}`
+      + ` ${valueOrNull(value.build)})`,
+    ));
+  });
 });
