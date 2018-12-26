@@ -1,0 +1,168 @@
+cmake_minimum_required(VERSION 3.11)
+project(SimpleVersion LANGUAGES CXX)
+
+include("../../SemverParse.cmake")
+
+function(message_error_info VERSION_STRING SEMVER_PARSE_RETURN_NAME ERROR_MESSAGE)
+  if(NOT error_info_printed)
+    message("Parsed version from '${VERSION_STRING}' (valid: ${_IS_VALID}):\n"
+      "  major: '${${SEMVER_PARSE_RETURN_NAME}_VERSION_MAJOR}'\n"
+      "  major: '${${SEMVER_PARSE_RETURN_NAME}_VERSION_MINOR}'\n"
+      "  major: '${${SEMVER_PARSE_RETURN_NAME}_VERSION_PATCH}'\n"
+      "  pre-release: '${${SEMVER_PARSE_RETURN_NAME}_VERSION_PRE_RELEASE}'\n"
+      "  build: '${${SEMVER_PARSE_RETURN_NAME}_VERSION_BUILD}'")
+    set(error_info_printed true PARENT_SCOPE)
+  endif()
+  message(SEND_ERROR "${ERROR_MESSAGE}")
+endfunction()
+
+function(semver_parse_verify VERSION_STRING VERSION_IS_VALID VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_PRE_RELEASE VERSION_BUILD)
+
+semver_parse(${VERSION_STRING} result)
+
+if (VERSION_IS_VALID)
+  if (NOT _IS_VALID)
+    message_error_info(${VERSION_STRING} result
+                       "version MUST be valid")
+  endif()
+endif()
+if (NOT VERSION_IS_VALID)
+  if (_IS_VALID)
+    message_error_info(${VERSION_STRING} result
+                       "version MUST NOT be valid")
+  endif()
+endif()
+
+if (VERSION_MAJOR STREQUAL null)
+  if (result_VERSION_MAJOR)
+    message_error_info(${VERSION_STRING} result
+                       "Major version MUST NOT be present")
+  endif()
+else()
+  if (NOT result_VERSION_MAJOR EQUAL VERSION_MAJOR)
+    message_error_info(${VERSION_STRING} result
+                       "Major version MUST be present")
+  endif()
+endif()
+
+if (VERSION_MINOR STREQUAL null)
+  if (result_VERSION_MINOR)
+    message_error_info(${VERSION_STRING} result
+                       "Minor version MUST NOT be present")
+  endif()
+else()
+  if (NOT result_VERSION_MINOR EQUAL VERSION_MINOR)
+    message_error_info(${VERSION_STRING} result
+                       "Minor version MUST be present")
+  endif()
+endif()
+
+if (VERSION_PATCH STREQUAL null)
+  if (result_VERSION_PATCH)
+    message_error_info(${VERSION_STRING} result
+                       "Patch version MUST be present")
+  endif()
+else()
+  if (NOT result_VERSION_PATCH EQUAL VERSION_PATCH)
+    message_error_info(${VERSION_STRING} result
+                       "Patch version MUST be present")
+  endif()
+endif()
+
+
+if (VERSION_PRE_RELEASE STREQUAL null)
+  if (result_VERSION_PRE_RELEASE)
+    message_error_info(${VERSION_STRING} result
+                       "Pre-release version MUST NOT be parsed")
+  endif()
+else()
+  if (NOT result_VERSION_PRE_RELEASE STREQUAL VERSION_PRE_RELEASE)
+    message_error_info(${VERSION_STRING} result
+                       "Pre-release version MUST be parsed")
+  endif()
+endif()
+
+if (VERSION_BUILD STREQUAL null)
+  if (result_VERSION_BUILD)
+    message_error_info(${VERSION_STRING} result
+                       "Build version MUST NOT be parsed")
+  endif()
+else()
+  if (NOT result_VERSION_BUILD STREQUAL VERSION_BUILD)
+    message_error_info(${VERSION_STRING} result
+                       "Build version MUST be parsed")
+  endif()
+endif()
+
+endfunction()
+
+
+# Start of test values
+semver_parse_verify("1" false null null null null null)
+semver_parse_verify("10.20.30" true 10 20 30 null null)
+semver_parse_verify("1.1.2-prerelease+meta" true 1 1 2 "prerelease" "meta")
+semver_parse_verify("1.1.2+meta" true 1 1 2 null "meta")
+semver_parse_verify("1.1.2+meta-valid" true 1 1 2 null "meta-valid")
+semver_parse_verify("1.0.0-alpha" true 1 0 0 "alpha" null)
+semver_parse_verify("1.0.0-beta" true 1 0 0 "beta" null)
+semver_parse_verify("1.0.0-alpha.beta" true 1 0 0 "alpha.beta" null)
+semver_parse_verify("1.0.0-alpha.beta.1" true 1 0 0 "alpha.beta.1" null)
+semver_parse_verify("1.0.0-alpha.1" true 1 0 0 "alpha.1" null)
+semver_parse_verify("1.0.0-alpha0.valid" true 1 0 0 "alpha0.valid" null)
+semver_parse_verify("1.0.0-alpha.0valid" true 1 0 0 "alpha.0valid" null)
+semver_parse_verify("1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay" true 1 0 0 "alpha-a.b-c-somethinglong" "build.1-aef.1-its-okay")
+semver_parse_verify("1.0.0-rc.1+build.1" true 1 0 0 "rc.1" "build.1")
+semver_parse_verify("2.0.0-rc.1+build.123" true 2 0 0 "rc.1" "build.123")
+semver_parse_verify("1.2.3-beta" true 1 2 3 "beta" null)
+semver_parse_verify("10.2.3-DEV-SNAPSHOT" true 10 2 3 "DEV-SNAPSHOT" null)
+semver_parse_verify("1.2.3-SNAPSHOT-123" true 1 2 3 "SNAPSHOT-123" null)
+semver_parse_verify("1.0.0" true 1 0 0 null null)
+semver_parse_verify("2.0.0" true 2 0 0 null null)
+semver_parse_verify("1.1.7" true 1 1 7 null null)
+semver_parse_verify("2.0.0+build.1848" true 2 0 0 null "build.1848")
+semver_parse_verify("2.0.1-alpha.1227" true 2 0 1 "alpha.1227" null)
+semver_parse_verify("1.0.0-alpha+beta" true 1 0 0 "alpha" "beta")
+semver_parse_verify("1.2.3----RC-SNAPSHOT.12.9.1--.12+788" true 1 2 3 "---RC-SNAPSHOT.12.9.1--.12" "788")
+semver_parse_verify("1.2.3----R-S.12.9.1--.12+meta" true 1 2 3 "---R-S.12.9.1--.12" "meta")
+semver_parse_verify("1.2.3----RC-SNAPSHOT.12.9.1--.12" true 1 2 3 "---RC-SNAPSHOT.12.9.1--.12" null)
+semver_parse_verify("1.0.0+0.build.1-rc.10000aaa-kk-0.1" true 1 0 0 null "0.build.1-rc.10000aaa-kk-0.1")
+semver_parse_verify("99999999999999999999999.999999999999999999.99999999999999999" true 1e+23 1000000000000000000 100000000000000000 null null)
+semver_parse_verify("1.0.0-0A.is.legal" true 1 0 0 "0A.is.legal" null)
+semver_parse_verify("1.2" false null null null null null)
+semver_parse_verify("1.2.3-0123" false null null null null null)
+semver_parse_verify("1.2.3-0123.0123" false null null null null null)
+semver_parse_verify("1.1.2+.123" false null null null null null)
+semver_parse_verify("+invalid" false null null null null null)
+semver_parse_verify("-invalid" false null null null null null)
+semver_parse_verify("-invalid+invalid" false null null null null null)
+semver_parse_verify("-invalid.01" false null null null null null)
+semver_parse_verify("alpha" false null null null null null)
+semver_parse_verify("alpha.beta" false null null null null null)
+semver_parse_verify("alpha.beta.1" false null null null null null)
+semver_parse_verify("alpha.1" false null null null null null)
+semver_parse_verify("alpha+beta" false null null null null null)
+semver_parse_verify("alpha_beta" false null null null null null)
+semver_parse_verify("alpha." false null null null null null)
+semver_parse_verify("alpha.." false null null null null null)
+semver_parse_verify("beta" false null null null null null)
+semver_parse_verify("1.0.0-alpha_beta" false null null null null null)
+semver_parse_verify("-alpha." false null null null null null)
+semver_parse_verify("1.0.0-alpha.." false null null null null null)
+semver_parse_verify("1.0.0-alpha..1" false null null null null null)
+semver_parse_verify("1.0.0-alpha...1" false null null null null null)
+semver_parse_verify("1.0.0-alpha....1" false null null null null null)
+semver_parse_verify("1.0.0-alpha.....1" false null null null null null)
+semver_parse_verify("1.0.0-alpha......1" false null null null null null)
+semver_parse_verify("1.0.0-alpha.......1" false null null null null null)
+semver_parse_verify("01.1.1" false null null null null null)
+semver_parse_verify("1.01.1" false null null null null null)
+semver_parse_verify("1.1.01" false null null null null null)
+semver_parse_verify("1.2.3.DEV" false null null null null null)
+semver_parse_verify("1.2-SNAPSHOT" false null null null null null)
+semver_parse_verify("1.2.31.2.3----RC-SNAPSHOT.12.09.1--..12+788" false null null null null null)
+semver_parse_verify("1.2-RC-SNAPSHOT" false null null null null null)
+semver_parse_verify("-1.0.3-gamma+b7718" false null null null null null)
+semver_parse_verify("+justmeta" false null null null null null)
+semver_parse_verify("9.8.7+meta+meta" false null null null null null)
+semver_parse_verify("9.8.7-whatever+meta+meta" false null null null null null)
+semver_parse_verify("99999999999999999999999.999999999999999999.99999999999999999----RC-SNAPSHOT.12.09.1--------------------------------..12" false null null null null null)

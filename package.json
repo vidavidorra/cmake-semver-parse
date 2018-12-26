@@ -25,5 +25,8 @@
     "@commitlint/config-conventional": "^7.1.2",
     "husky": "^1.2.0",
     "standard-version": "^4.4.0"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1"
   }
 }
