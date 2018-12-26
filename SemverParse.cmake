@@ -63,7 +63,7 @@ function(semver_parse VERSION_STRING RETURN_NAME)
   # - Match the basic version and validate both the basic version and the pre-release and build.
   string(REGEX MATCH "^${semver_regex}$" match "${VERSION_STRING}")
   if (NOT match)
-    set(${_IS_VALID} false PARENT_SCOPE)
+    set(_IS_VALID false PARENT_SCOPE)
     return()
   endif ()
 
@@ -87,8 +87,10 @@ function(semver_parse VERSION_STRING RETURN_NAME)
     set(${RETURN_NAME}_VERSION_PATCH ${version_patch} PARENT_SCOPE)
   endif ()
 
+
   # - Return if no pre-release and/or build are present in the version string.
   if (${CMAKE_MATCH_COUNT} LESS 4)
+    set(_IS_VALID true PARENT_SCOPE)
     return()
   endif ()
 
@@ -102,7 +104,7 @@ function(semver_parse VERSION_STRING RETURN_NAME)
   string(REGEX MATCH "^${semver_pre_release_build_regex}$" match "${pre_release_build_version_string}")
 
   if (NOT match)
-    set(${_IS_VALID} false PARENT_SCOPE)
+    set(_IS_VALID false PARENT_SCOPE)
     return()
   endif ()
 
@@ -115,6 +117,6 @@ function(semver_parse VERSION_STRING RETURN_NAME)
     set(${RETURN_NAME}_VERSION_BUILD ${version_build} PARENT_SCOPE)
   endif ()
 
-  set(${_IS_VALID} true PARENT_SCOPE)
+  set(_IS_VALID true PARENT_SCOPE)
 
 endfunction()
