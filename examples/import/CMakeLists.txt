@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(SemverParseImport LANGUAGES CXX)
+project(SemverParseImport)
 
 string(TIMESTAMP DATETIME "%a, %m %b %Y %H:%M:%S (%s UTC)")
 message("-- ${DATETIME}")
