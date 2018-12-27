@@ -21,7 +21,7 @@ function(semver_parse VERSION_STRING RETURN_NAME)
   set(semver_major_regex "(0|[1-9][0-9]*)")
   set(semver_minor_regex "${semver_major_regex}")
   set(semver_patch_regex "${semver_major_regex}")
-  
+
   # pre-release
   # Regex: (?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
   # Changes:

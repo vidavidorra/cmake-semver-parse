@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 2.8)
 project(SimpleVersion LANGUAGES CXX)
 
 include("../../SemverParse.cmake")
 semver_parse("1.2.3" package_version)
 
-if (NOT _IS_VALID) 
+if (NOT _IS_VALID)
   message(SEND_ERROR "semver_parse Could not parse version string")
 endif()
 
