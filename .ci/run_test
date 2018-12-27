@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 readonly ORIGINAL_PWD=$(pwd)
 readonly PROJECT_ROOT="$(dirname "$0")/.."
@@ -10,16 +9,21 @@ cd "${PROJECT_ROOT}/examples"
 # Run import test
 echo "Running import test..."
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./import
+if [[ $? -ne 0 ]]; then error_ocurred=true; fi
 rm -rf "${CMAKE_BUILD_DIR}"
 
 # Run simple version test
 echo "Running simple version test..."
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./simple_version
+if [[ $? -ne 0 ]]; then error_ocurred=true; fi
 rm -rf "${CMAKE_BUILD_DIR}"
 
 # Run regression test
 echo "Running regression test..."
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./regression_test
+if [[ $? -ne 0 ]]; then error_ocurred=true; fi
 rm -rf "${CMAKE_BUILD_DIR}"
 
 cd $ORIGINAL_PWD
+
+if [[ $error_ocurred = true ]]; then exit 1; fi
