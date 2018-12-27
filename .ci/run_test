@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 readonly ORIGINAL_PWD=$(pwd)
 readonly PROJECT_ROOT="$(dirname "$0")/.."
