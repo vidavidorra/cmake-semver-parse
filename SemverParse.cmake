@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.7)
+
 function(semver_parse VERSION_STRING RETURN_NAME)
 
   # Semver regular expression.
