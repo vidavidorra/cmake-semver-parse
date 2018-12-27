@@ -5,6 +5,8 @@ branches:
 
 build:
   ci:
+    - sudo apt-get update
+    - sudo apt-get install cmake
     - ./.ci/run_test
 
 integrations:
