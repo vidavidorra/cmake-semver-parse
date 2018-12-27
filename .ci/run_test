@@ -1,0 +1,24 @@
+#!/bin/bash
+
+readonly ORIGINAL_PWD=$(pwd)
+readonly PROJECT_ROOT="$(pwd)/.."
+readonly CMAKE_BUILD_DIR="cmake-build-release"
+
+cd "${PROJECT_ROOT}/examples"
+
+# Run import test
+echo "Running import test..."
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./import
+rm -rf "${CMAKE_BUILD_DIR}"
+
+# Run simple version test
+echo "Running simple version test..."
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./simple_version
+rm -rf "${CMAKE_BUILD_DIR}"
+
+# Run regression test
+echo "Running regression test..."
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B"${CMAKE_BUILD_DIR}" -H./regression_test
+rm -rf "${CMAKE_BUILD_DIR}"
+
+cd $ORIGINAL_PWD

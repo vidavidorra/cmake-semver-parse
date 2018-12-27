@@ -1,0 +1,16 @@
+branches:
+  only:
+    - develop
+    - test
+
+build:
+  ci:
+    - ./.ci/run_test
+
+integrations:
+  notifications:
+    - integrationName: email
+      type: email
+      on_success: change
+      on_failure: change
+      sendConsoleLogs: true
